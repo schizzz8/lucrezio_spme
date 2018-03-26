@@ -9,14 +9,14 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <detection.h>
+#include <core/detection.h>
 
 class Detector{
 public:
   Detector();
 
-  void setImages(const srrg_core::RGBImage& rgb_image_,
-                 const srrg_core::RawDepthImage& raw_depth_image_);
+  void setImages(const cv::Mat& rgb_image_,
+                 const cv::Mat& raw_depth_image_);
   
   virtual void compute() = 0;
   

@@ -1,20 +1,18 @@
 #pragma once
 
-#include "semantic_map.h"
-#include "detection.h"
+#include <core/semantic_map.h>
+#include <core/detection.h>
 
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
-
-#include <pcl/filters/statistical_outlier_removal.h>
 
 class Mapper{
 public:
     Mapper();
 
-    void extractObjects(const Detections &detections);
-    void findAssociations();
-    void mergeMaps();
+    virtual void extractObjects(const Detections &detections) = 0;
+    virtual void findAssociations() = 0;
+    virtual void mergeMaps() = 0;
 
 private:
     SemanticMap _local_map;

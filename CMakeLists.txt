@@ -12,6 +12,14 @@ find_package(catkin REQUIRED)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+# Find Eigen3
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
+#ds OpenCV - OpenCV_DIR might be overwritten by user
+find_package(OpenCV REQUIRED)
+message("using OpenCV version ${OpenCV_VERSION} (${OpenCV_DIR})")
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -99,8 +107,8 @@ find_package(catkin REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES lucrezio_spme
+  INCLUDE_DIRS src
+  LIBRARIES lucrezio_spme_core_library
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
@@ -112,8 +120,8 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-# ${catkin_INCLUDE_DIRS}
+  ${PROJECT_SOURCE_DIR}/src
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -145,6 +153,8 @@ include_directories(
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 
 #############
 ## Install ##
