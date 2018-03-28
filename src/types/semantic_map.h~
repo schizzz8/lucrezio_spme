@@ -1,6 +1,6 @@
 #pragma once
 
-#include "object.h"
+#include "types.hpp"
 
 class SemanticMap {
 public:
@@ -11,6 +11,6 @@ public:
   void clear();
 
 private:
-  Objects _objects;
+  ObjectVector _objects;
 };
 

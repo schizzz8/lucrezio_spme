@@ -1,14 +1,6 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
-class Object;
-typedef std::vector<Object*> Objects;
-typedef std::pair<Object,Object> Association;
+//#include "types.hpp"
 
 class Object {
 public:
@@ -17,7 +9,13 @@ public:
          std::string type_="",
          Eigen::Isometry3f pose_=Eigen::Isometry3f::Identity(),
          Eigen::Vector3f min_=Eigen::Vector3f::Zero(),
-         Eigen::Vector3f max_=Eigen::Vector3f::Zero());
+         Eigen::Vector3f max_=Eigen::Vector3f::Zero()):
+    _id(id_),
+    _type(type_),
+    _pose(pose_),
+    _min(min_),
+    _max(max_){}
+
 
 private:
   int _id;

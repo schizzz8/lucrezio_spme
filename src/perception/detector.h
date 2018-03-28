@@ -9,23 +9,23 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <core/detection.h>
+#include <types/types.hpp>
 
+//abstract class for object detector
 class Detector{
 public:
   Detector();
 
-  void setImages(const cv::Mat& rgb_image_,
-                 const cv::Mat& raw_depth_image_);
+  //this function performs object detection
+  virtual void compute(const cv::Mat& rgb_image_,
+                       const cv::Mat& raw_depth_image_) = 0;
   
-  virtual void compute() = 0;
+  //this function returns the output of the detection
+  inline const DetectionVector& detections() const {return _detections;}
   
-  inline const Detections& detections() const {return _detections;}
-  
-private:
-  cv::Mat _rgb_image;
-  cv::Mat _raw_depth_image;
-  
-  Detections _detections;
+private:  
+
+  //detected objects
+  DetectionVector _detections;
 };
 

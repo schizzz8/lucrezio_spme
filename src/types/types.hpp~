@@ -1,0 +1,23 @@
+#pragma once
+
+#include <string>
+#include <vector>
+#include <utility>
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
+#include "object.hpp"
+
+#include "detection.hpp"
+
+
+//class Detection;
+typedef std::vector<Detection> Detections;
+
+//class Object;
+typedef std::vector<Object*> Objects;
+typedef std::pair<Object,Object> Association;
+
+//class SemanticMap;
+
