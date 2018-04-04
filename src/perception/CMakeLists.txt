@@ -1,8 +1,11 @@
-add_library(lucrezio_spme_perception_library SHARED
-  detector.cpp detector.h
+add_library(lucrezio_perception_library SHARED
+  detection.h
+  model.h
+  base_detector.h
+  logical_detector.h logical_detector.cpp
 )
 
-target_link_libraries(lucrezio_spme_perception_library
+target_link_libraries(lucrezio_perception_library
   ${OpenCV_LIBS}
   ${catkin_LIBRARIES}
 )

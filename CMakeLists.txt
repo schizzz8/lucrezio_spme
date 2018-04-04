@@ -2,12 +2,12 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lucrezio_spme)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+ add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED srrg_core)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -108,8 +108,8 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS src
-  LIBRARIES lucrezio_spme_core_library
-#  CATKIN_DEPENDS other_catkin_pkg
+  LIBRARIES lucrezio_semantic_map_library lucrezio_perception_library
+  CATKIN_DEPENDS srrg_core
 #  DEPENDS system_lib
 )
 
