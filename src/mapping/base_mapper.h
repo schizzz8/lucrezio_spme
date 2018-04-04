@@ -26,9 +26,6 @@ namespace lucrezio_spme{
 
   protected:
 
-    //pose of the robot w.r.t. the global map
-    Eigen::Isometry3f _globalT;
-
     //map built from the current frame
     SemanticMap *_local_map;
 

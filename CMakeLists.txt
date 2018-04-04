@@ -4,10 +4,25 @@ project(lucrezio_spme)
 ## Compile as C++11, supported in ROS Kinetic and newer
  add_compile_options(-std=c++11)
 
+#set the default path for built executables to the "bin" directory
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+#set the default path for built libraries to the "lib" directory
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED srrg_core)
+find_package(catkin REQUIRED 
+  srrg_core
+  cv_bridge
+  geometry_msgs
+  image_transport
+  lucrezio_simulation_environments
+  roscpp
+  rospy
+  sensor_msgs
+  std_msgs
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -51,11 +66,12 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+ add_message_files(
+   FILES
+   Pixel.msg
+   ImageBoundingBox.msg
+   ImageBoundingBoxesArray.msg
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -72,10 +88,10 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   geometry_msgs sensor_msgs  std_msgs
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -108,8 +124,20 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS src
-  LIBRARIES lucrezio_perception_library lucrezio_mapping_library
-  CATKIN_DEPENDS srrg_core
+  LIBRARIES 
+    lucrezio_perception_library 
+    lucrezio_mapping_library
+  CATKIN_DEPENDS 
+    srrg_core
+    cv_bridge 
+    geometry_msgs 
+    image_transport 
+    lucrezio_simulation_environments 
+    roscpp 
+    rospy 
+    sensor_msgs 
+    std_msgs 
+    message_runtime
 #  DEPENDS system_lib
 )
 

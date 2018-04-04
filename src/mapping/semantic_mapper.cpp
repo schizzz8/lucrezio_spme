@@ -12,6 +12,8 @@ namespace lucrezio_spme{
 
     _local_set = false;
     _global_set = false;
+
+    _globalT = Eigen::Isometry3f::Identity();
   }
 
   Vector3fVector SemanticMapper::unproject(const std::vector<Eigen::Vector2i> &pixels,

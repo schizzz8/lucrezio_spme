@@ -13,18 +13,18 @@ namespace lucrezio_spme{
   }
 
   void Object::merge(const ObjectPtr & o){
-    if(o->lower().x() < _min.x())
-      _min.x() = o->lower().x();
-    if(o->upper().x() > _max.x())
-      _max.x() = o->upper().x();
-    if(o->lower().y() < _min.y())
-      _min.y() = o->lower().y();
-    if(o->upper().y() > _max.y())
-      _max.y() = o->upper().y();
-    if(o->lower().z() < _min.z())
-      _min.z() = o->lower().z();
-    if(o->upper().z() > _max.z())
-      _max.z() = o->upper().z();
+    if(o->min().x() < _min.x())
+      _min.x() = o->min().x();
+    if(o->max().x() > _max.x())
+      _max.x() = o->max().x();
+    if(o->min().y() < _min.y())
+      _min.y() = o->min().y();
+    if(o->max().y() > _max.y())
+      _max.y() = o->max().y();
+    if(o->min().z() < _min.z())
+      _min.z() = o->min().z();
+    if(o->max().z() > _max.z())
+      _max.z() = o->max().z();
 
     _pose.translation() = (_min+_max)/2.0f;
 

@@ -40,10 +40,10 @@ namespace lucrezio_spme{
     inline std::string& type() {return _type;}
     inline const Eigen::Isometry3f& pose() const {return _pose;}
     inline Eigen::Isometry3f& pose() {return _pose;}
-    inline const Eigen::Vector3f& lower() const {return _min;}
-    inline Eigen::Vector3f& lower() {return _min;}
-    inline const Eigen::Vector3f& upper() const {return _max;}
-    inline Eigen::Vector3f& upper() {return _max;}
+    inline const Eigen::Vector3f& min() const {return _min;}
+    inline Eigen::Vector3f& min() {return _min;}
+    inline const Eigen::Vector3f& max() const {return _max;}
+    inline Eigen::Vector3f& max() {return _max;}
 
     //overriden operators
     bool operator < (const Object &o);

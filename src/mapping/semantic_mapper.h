@@ -8,7 +8,8 @@
 #include <opencv2/highgui.hpp>
 
 #include <srrg_types/types.hpp>
-
+#include <srrg_image_utils/depth_utils.h>
+#include <srrg_image_utils/point_image_utils.h>
 
 namespace lucrezio_spme{
   class SemanticMapper : public BaseMapper{
@@ -19,6 +20,9 @@ namespace lucrezio_spme{
 
     //set camera matrix
     inline void setK(const Eigen::Matrix3f& K_){_K = K_; _invK = _K.inverse();}
+
+    //set robot pose
+    inline void setGlobalT(const Eigen::Isometry3f &globalT_){_globalT = globalT_;}
 
     //specialized extractObjects method
     void extractObjects(const DetectionVector &detections,
@@ -31,10 +35,17 @@ namespace lucrezio_spme{
     void mergeMaps();
 
   protected:
+    //pose of the robot w.r.t. the global map
+    Eigen::Isometry3f _globalT;
+
+    //flags
     bool _local_set;
     bool _global_set;
 
+    //vector of associations
     ObjectPtrPairVector _associations;
+
+
   private:
 
     //rgbd camera parameters
