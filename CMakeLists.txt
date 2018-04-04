@@ -108,7 +108,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS src
-  LIBRARIES lucrezio_semantic_map_library lucrezio_perception_library
+  LIBRARIES lucrezio_perception_library lucrezio_mapping_library
   CATKIN_DEPENDS srrg_core
 #  DEPENDS system_lib
 )

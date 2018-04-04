@@ -14,6 +14,7 @@ namespace lucrezio_spme{
   typedef std::shared_ptr<Object> ObjectPtr;
   typedef std::vector<ObjectPtr> ObjectPtrVector;
   typedef std::pair<ObjectPtr,ObjectPtr> ObjectPtrPair;
+  typedef std::vector<ObjectPtrPair> ObjectPtrPairVector;
 
   //this class is a container for a 3d object that composes the semantic map
   class Object {
