@@ -23,11 +23,12 @@ namespace lucrezio_spme {
     Detection(const std::string& type_="",
               const Eigen::Vector2i& top_left_ = Eigen::Vector2i(10000,10000),
               const Eigen::Vector2i& bottom_right_ = Eigen::Vector2i(-10000,-10000),
-              const std::vector<Eigen::Vector2i>& pixels_ = std::vector<Eigen::Vector2i>()):
+              const std::vector<Eigen::Vector2i>& pixels_ = std::vector<Eigen::Vector2i>(640*480)):
       _type(type_),
       _top_left(top_left_),
       _bottom_right(bottom_right_),
-      _pixels(pixels_){}
+      _pixels(pixels_),
+      _size(0){}
 
     //setters and getters
     inline const std::string &type() const {return _type;}

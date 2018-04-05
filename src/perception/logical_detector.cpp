@@ -64,6 +64,8 @@ namespace lucrezio_spme{
             break;
           }
         }
+
+
       }
     }
 
@@ -75,11 +77,14 @@ namespace lucrezio_spme{
   DetectionVector LogicalDetector::compute(const cv::Mat &rgb_image_,
                                            const cv::Mat &raw_depth_image_){
 
+    int rows=rgb_image_.rows;
+    int cols=rgb_image_.cols;
+
     //compute points image
     srrg_core::Float3Image directions_image;
-    directions_image.create(rgb_image_.rows,rgb_image_.cols);
+    directions_image.create(rows,cols);
     initializePinholeDirections(directions_image,_K);
-    _points_image.create(rgb_image_.rows,rgb_image_.cols);
+    _points_image.create(rows,cols);
     cv::Mat depth_image;
     convert_16UC1_to_32FC1(depth_image, raw_depth_image_);
     computePointsImage(_points_image,
@@ -89,12 +94,8 @@ namespace lucrezio_spme{
                        8.0f);
 
     //initialize detection vector
-    DetectionVector detections;
     int num_models = _models.size();
-    detections.resize(num_models);
-    for(int i=0; i<num_models; ++i){
-      detections[i] = DetectionPtr (new Detection);
-    }
+    DetectionVector detections(num_models,DetectionPtr (new Detection));
 
     //Compute world bounding boxes
     double cv_wbb_time = (double)cv::getTickCount();
@@ -106,7 +107,12 @@ namespace lucrezio_spme{
     computeImageBoundingBoxes(detections);
     printf("Computing IBB took: %f\n",((double)cv::getTickCount() - cv_ibb_time)/cv::getTickFrequency());
 
+    //Compute label image (for visualization only)
+    _label_image.create(rows,cols);
+    _label_image=cv::Vec3b(0,0,0);
+    computeLabelImage(detections);
 
+    return detections;
   }
 
   cv::Vec3b LogicalDetector::type2color(std::string type){
