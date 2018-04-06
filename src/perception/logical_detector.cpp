@@ -60,7 +60,7 @@ namespace lucrezio_spme{
             if(c > detections[j].bottomRight().y())
               detections[j].bottomRight().y() = c;
 
-            detections[j].pixels()[detections[j].size()] = Eigen::Vector2i(c,r);
+            detections[j].pixels()[detections[j].size()] = Eigen::Vector2i(r,c);
             ++(detections[j].size());
             break;
           }

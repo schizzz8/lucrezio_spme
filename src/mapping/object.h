@@ -5,6 +5,8 @@
 #include <vector>
 #include <memory>
 
+#include <srrg_types/cloud_3d.h>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -23,15 +25,17 @@ namespace lucrezio_spme{
 
     //constructor
     Object(int id_=-1,
-           std::string type_="",
-           Eigen::Isometry3f pose_=Eigen::Isometry3f::Identity(),
-           Eigen::Vector3f min_=Eigen::Vector3f::Zero(),
-           Eigen::Vector3f max_=Eigen::Vector3f::Zero()):
+           const std::string &type_="",
+           const Eigen::Isometry3f &pose_=Eigen::Isometry3f::Identity(),
+           const Eigen::Vector3f &min_=Eigen::Vector3f::Zero(),
+           const Eigen::Vector3f &max_=Eigen::Vector3f::Zero(),
+           const srrg_core::Cloud3D &cloud_=srrg_core::Cloud3D()):
       _id(id_),
       _type(type_),
       _pose(pose_),
       _min(min_),
-      _max(max_){}
+      _max(max_),
+      _cloud(cloud_){}
 
     //setters and getters
     inline const int id() const {return _id;}
@@ -45,7 +49,7 @@ namespace lucrezio_spme{
     inline const Eigen::Vector3f& max() const {return _max;}
     inline Eigen::Vector3f& max() {return _max;}
 
-    //overriden operators
+    //overloaded operators
     bool operator < (const Object &o);
     bool operator == (const Object &o);
 
@@ -68,5 +72,9 @@ namespace lucrezio_spme{
 
     //upper vertex of the object bounding box
     Eigen::Vector3f _max;
+
+    //object point cloud
+    srrg_core::Cloud3D _cloud;
+
   };
 }

@@ -35,6 +35,13 @@ namespace lucrezio_spme{
     void mergeMaps();
 
   protected:
+
+    //organized point cloud obtained from the depth image
+    srrg_core::Float3Image _points_image;
+
+    //point cloud normals
+    srrg_core::Float3Image _normals_image;
+
     //pose of the robot w.r.t. the global map
     Eigen::Isometry3f _globalT;
 
@@ -55,12 +62,8 @@ namespace lucrezio_spme{
     //rgbd camera matrix
     Eigen::Matrix3f _K,_invK;
 
-    //computes 3d coordinates for each pixel
-    srrg_core::Vector3fVector unproject(const std::vector<Eigen::Vector2i> &pixels,
-                                        const cv::Mat &depth_image_);
-
-    //given a point cloud, computes 3d bounding box
-    void getLowerUpper3d(const srrg_core::Vector3fVector &points, Eigen::Vector3f &lower, Eigen::Vector3f &upper);
+    //this function builds an object from the detector output
+    ObjectPtr objectFromDetection(const Detection &detection);
 
     //given an object in the local map, returns the id of the corresponding object in the global map
     int associationID(const ObjectPtr &local);
