@@ -26,16 +26,26 @@ namespace lucrezio_spme{
     int k=0;
     for(int idx=0; idx < num_pixels; ++idx){
       const Eigen::Vector2i& pixel = pixels[idx];
-      int r = pixel.x();
-      int c = pixel.y();
+      int c = pixel.x();
+      int r = pixel.y();
+
+      if(r < 0 || r >= depth_image_.rows || c < 0 || c >= depth_image_.cols){
+        std::cerr << "r: " << r << " - c: " << c << std::endl;
+        continue;
+      }
+
       const unsigned short& depth = depth_image_.at<const unsigned short>(r,c);
       float d = depth * _raw_depth_scale;
 
-      if(d <= _min_distance)
+      if(d <= _min_distance){
+//        std::cerr << ".";
         continue;
+      }
 
-      if(d >= _max_distance)
+      if(d >= _max_distance){
+//        std::cerr << "o";
         continue;
+      }
 
       Eigen::Vector3f camera_point = _invK * Eigen::Vector3f(c*d,r*d,d);
       Eigen::Vector3f map_point = _globalT*camera_point;
@@ -43,6 +53,7 @@ namespace lucrezio_spme{
       points[k]=map_point;
       k++;
     }
+    std::cerr << k << std::endl;
     points.resize(k);
     return points;
   }
@@ -91,8 +102,9 @@ namespace lucrezio_spme{
          (detection.bottomRight()-detection.topLeft()).norm() >= 2e+4)
         continue;
 
-      std::cerr << std::endl << detection.type() << ": [(";
-      std::cerr << detection.topLeft().transpose() << ") - (" << detection.bottomRight().transpose() << ")]" << std::endl;
+      std::cerr << std::endl << detection.type() << ": ";
+      std::cerr << "[(" << detection.topLeft().transpose() << ") -";
+      std::cerr << " (" << detection.bottomRight().transpose() << ")]" << std::endl;
 
       std::string object_type = detection.type().substr(0,detection.type().find_first_of("_"));
 
