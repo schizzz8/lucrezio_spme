@@ -147,7 +147,7 @@ namespace lucrezio_spme{
         int r = detections[i].pixels()[j].x();
         int c = detections[i].pixels()[j].y();
 
-        _label_image.at<cv::Vec3b>(c,r) = color;
+        _label_image.at<cv::Vec3b>(r,c) = color;
       }
     }
   }

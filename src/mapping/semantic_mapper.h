@@ -49,8 +49,6 @@ namespace lucrezio_spme{
     bool _local_set;
     bool _global_set;
 
-    //vector of associations
-    ObjectPtrPairVector _associations;
 
 
   private:
@@ -66,6 +64,6 @@ namespace lucrezio_spme{
     ObjectPtr objectFromDetection(const Detection &detection);
 
     //given an object in the local map, returns the id of the corresponding object in the global map
-    int associationID(const ObjectPtr &local);
+//    int associationID(const ObjectPtr &local);
   };
 }

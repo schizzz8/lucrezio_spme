@@ -103,7 +103,7 @@ namespace lucrezio_spme{
         }
         _markers_pub.publish(markers);
       }
-      _image_bounding_boxes_sub.unsubscribe();
+//      _image_bounding_boxes_sub.unsubscribe();
     }
   }
 

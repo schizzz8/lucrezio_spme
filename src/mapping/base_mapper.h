@@ -32,8 +32,9 @@ namespace lucrezio_spme{
     //actual map that stores objects in a global reference frame and gets updated for each new observation
     SemanticMap *_global_map;
 
-    //this vector stores the output of the data-association
-    ObjectPtrPairVector _associations;
+    //this map stores the output of the data-association
+    ObjectPtrIdMap _associations;
+
   };
 
 }

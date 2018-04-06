@@ -42,6 +42,9 @@ namespace lucrezio_spme{
 
       Eigen::Vector3f point(cv_point[0], cv_point[1],cv_point[2]);
       Eigen::Vector3f normal(cv_normal[0], cv_normal[1],cv_normal[2]);
+
+      point = _globalT*point;
+
       cloud[k] = RichPoint3D(point,normal,1.0f);
       k++;
 
@@ -70,7 +73,7 @@ namespace lucrezio_spme{
     Eigen::Isometry3f pose = Eigen::Isometry3f::Identity();
     pose.translation() = (max+min)/2.0f;
 
-    return ObjectPtr(new Object(0,object_type,pose,min,max,cloud));
+    return ObjectPtr(new Object(-1,object_type,pose,min,max,cloud));
 
   }
 
@@ -121,10 +124,12 @@ namespace lucrezio_spme{
       if(!obj_ptr)
         continue;
 
-      if(populate_global)
+      if(populate_global){
+        obj_ptr->id() = _global_map->size();
         _global_map->addObject(obj_ptr);
-      else
+      } else {
         _local_map->addObject(obj_ptr);
+      }
     }
   }
 
@@ -147,7 +152,7 @@ namespace lucrezio_spme{
 
       std::cerr << "\t>> Global: " << global_type;
 
-      ObjectPtr local_best;
+      ObjectPtr local_best = nullptr;
       float best_error = std::numeric_limits<float>::max();
 
       for(int j=0; j < local_size; ++j){
@@ -166,20 +171,13 @@ namespace lucrezio_spme{
           local_best = local;
         }
       }
+
       if(local_best->type() == "")
         continue;
 
       std::cerr << " - Local ID: " << local_best->type() << std::endl;
-
-      _associations.push_back(ObjectPtrPair(global,local_best));
+      _associations[local_best] = i;
     }
-  }
-
-  int SemanticMapper::associationID(const ObjectPtr &local){
-    for(int i=0; i < _associations.size(); ++i)
-      if(_associations[i].second->id() == local->id())
-        return _associations[i].first->id();
-    return -1;
   }
 
   void SemanticMapper::mergeMaps(){
@@ -187,14 +185,12 @@ namespace lucrezio_spme{
       return;
 
     int added = 0, merged = 0;
-    for(int i=0; i < _local_map->size(); ++i){
+    for(int i=0; i<_local_map->size(); ++i){
       const ObjectPtr &local = (*_local_map)[i];
-      int association_id = associationID(local);
-      if(association_id == -1){
-        _global_map->addObject(local);
-        added++;
-        continue;
-      } else {
+      ObjectPtrIdMap::iterator it = _associations.find(local);
+      int association_id = -1;
+      if(it != _associations.end()){
+        association_id = it->second;
         ObjectPtr &global_associated = (*_global_map)[association_id];
 
         if(local->type() != global_associated->type())
@@ -202,7 +198,12 @@ namespace lucrezio_spme{
 
         global_associated->merge(local);
         merged++;
+      } else {
+        local->id() = _global_map->size();
+        _global_map->addObject(local);
+        added++;
       }
     }
   }
+
 }
