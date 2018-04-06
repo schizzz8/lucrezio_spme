@@ -7,9 +7,9 @@ namespace lucrezio_spme{
   SemanticMapperNode::SemanticMapperNode(ros::NodeHandle nh_):
     SemanticMapper(),
     _nh(nh_),
-    _image_bounding_boxes_sub(_nh,"/image_bounding_boxes",100),
-    _depth_image_sub(_nh,"/camera/depth/image_raw", 100),
-    _synchronizer(FilterSyncPolicy(100),_image_bounding_boxes_sub,_depth_image_sub){
+    _image_bounding_boxes_sub(_nh,"/image_bounding_boxes",1),
+    _depth_image_sub(_nh,"/camera/depth/image_raw", 1),
+    _synchronizer(FilterSyncPolicy(10),_image_bounding_boxes_sub,_depth_image_sub){
 
     _got_info = false;
     _camera_info_sub = _nh.subscribe("/camera/depth/camera_info",
@@ -18,6 +18,8 @@ namespace lucrezio_spme{
                                      this);
 
     _synchronizer.registerCallback(boost::bind(&SemanticMapperNode::filterCallback, this, _1, _2));
+
+    _model_state_client = _nh.serviceClient<gazebo_msgs::GetModelState>("gazebo/get_model_state");
 
     _shape = visualization_msgs::Marker::CUBE;
     _markers_pub = _nh.advertise<visualization_msgs::MarkerArray>("visualization_markers",1);
@@ -52,25 +54,22 @@ namespace lucrezio_spme{
 
     if(_got_info && !image_bounding_boxes_msg->image_bounding_boxes.empty()){
 
-      //Listen to camera pose
-      tf::StampedTransform depth_camera_pose;
-      try {
-        _listener.waitForTransform("map",
-                                   "camera_depth_optical_frame",
-                                   ros::Time(0),
-                                   ros::Duration(3));
-        _listener.lookupTransform("map",
-                                  "camera_depth_optical_frame",
-                                  ros::Time(0),
-                                  depth_camera_pose);
-      }
-      catch(tf::TransformException ex) {
-        ROS_ERROR("%s", ex.what());
-      }
+      //request robot pose
+      gazebo_msgs::GetModelState model_state;
+      model_state.request.model_name = "robot";
+      tf::StampedTransform robot_pose;
+      if(_model_state_client.call(model_state)){
+        ROS_INFO("Received robot model state!");
+        tf::poseMsgToTF(model_state.response.pose,robot_pose);
+      }else
+        ROS_ERROR("Failed to call service gazebo/get_model_state");
+      Eigen::Isometry3f rgbd_pose = Eigen::Isometry3f::Identity();
+      rgbd_pose.translation() = Eigen::Vector3f(0.0,0.0,0.5);
+      rgbd_pose.linear() = Eigen::Quaternionf(0.5,-0.5,0.5,-0.5).toRotationMatrix();
 
-      //set robot pose
-      Eigen::Isometry3f globalT=tfTransform2eigen(depth_camera_pose);
-      setGlobalT(globalT);
+      //set global pose
+      const Eigen::Isometry3f rgbd_transform=tfTransform2eigen(robot_pose)*rgbd_pose;
+      setGlobalT(rgbd_transform);
 
       //Extract depth image from ROS message
       cv_bridge::CvImageConstPtr depth_cv_ptr;
@@ -80,11 +79,11 @@ namespace lucrezio_spme{
         ROS_ERROR("cv_bridge exception: %s", e.what());
         return;
       }
-      cv::Mat depth_image = depth_cv_ptr->image.clone();
 
       //extract objects
       DetectionVector detections = imageBoundingBoxes2Detections(image_bounding_boxes_msg);
-      extractObjects(detections,depth_image);
+
+      extractObjects(detections,depth_cv_ptr->image.clone());
 
       //data association
       findAssociations();
@@ -94,16 +93,19 @@ namespace lucrezio_spme{
 
       //publish global map (to be visualized with RViz)
       if(_global_map->size() && _markers_pub.getNumSubscribers() > 0){
-          visualization_msgs::MarkerArray markers;
+        visualization_msgs::MarkerArray markers;
 
-          for(int i=0; i < _global_map->size(); ++i){
-              visualization_msgs::Marker marker;
-              const ObjectPtr& object = (*_global_map)[i];
-              makeMarkerFromObject(marker,object);
-              markers.markers.push_back(marker);
-          }
-          _markers_pub.publish(markers);
+        for(int i=0; i < _global_map->size(); ++i){
+          visualization_msgs::Marker marker;
+          const ObjectPtr& object = (*_global_map)[i];
+          makeMarkerFromObject(marker,object);
+          markers.markers.push_back(marker);
+        }
+        _markers_pub.publish(markers);
       }
+
+      _image_bounding_boxes_sub.unsubscribe();
+
     }
   }
 
@@ -128,14 +130,14 @@ namespace lucrezio_spme{
     std::vector<Eigen::Vector2i> pixels;
     for(int i=0; i < image_bounding_boxes.size(); ++i){
       const ImageBoundingBox& image_bounding_box = image_bounding_boxes[i];
-      std::string type (image_bounding_box.type);
+      std::string type = image_bounding_box.type;
       Eigen::Vector2i top_left (image_bounding_box.top_left.r,image_bounding_box.top_left.c);
       Eigen::Vector2i bottom_right(image_bounding_box.bottom_right.r,image_bounding_box.bottom_right.c);
       pixels.clear();
       for(int j=0; j < image_bounding_box.pixels.size(); ++j){
         pixels.push_back(Eigen::Vector2i(image_bounding_box.pixels[j].r,image_bounding_box.pixels[j].c));
       }
-      detections.push_back(DetectionPtr (new Detection(type,top_left,bottom_right,pixels)));
+      detections.push_back(Detection(type,top_left,bottom_right,pixels));
     }
     return detections;
   }
@@ -169,5 +171,5 @@ namespace lucrezio_spme{
     marker.color.a = 1.0;
 
     marker.lifetime = ros::Duration();
-}
+  }
 }

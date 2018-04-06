@@ -1,16 +1,16 @@
 #include <iostream>
-#include "logical_detector_node.h"
+#include "semantic_mapper_node.h"
 
 using namespace lucrezio_spme;
 
 int main(int argc, char **argv){
 
-  ros::init(argc, argv, "logical_detector");
+  ros::init(argc, argv, "semantic_mapper");
   ros::NodeHandle nh;
 
-  LogicalDetectorNode detector(nh);
+  SemanticMapperNode mapper(nh);
 
-//  ros::spin();
+  //  ros::spin();
   ros::Rate rate(4);
   while(ros::ok()){
     ros::spinOnce();

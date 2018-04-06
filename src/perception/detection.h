@@ -11,8 +11,7 @@
 namespace lucrezio_spme {
 
   class Detection;
-  typedef std::shared_ptr<Detection> DetectionPtr;
-  typedef std::vector<DetectionPtr> DetectionVector;
+  typedef std::vector<Detection> DetectionVector;
 
   //this class is a container for the output of an object detector
   class Detection{

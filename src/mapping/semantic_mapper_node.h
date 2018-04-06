@@ -13,6 +13,7 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#include <gazebo_msgs/GetModelState.h>
 #include <visualization_msgs/MarkerArray.h>
 
 namespace lucrezio_spme{
@@ -32,7 +33,8 @@ namespace lucrezio_spme{
     bool _got_info;
     bool _first = true;
 
-    tf::TransformListener _listener;
+    //client for the model_state service
+    ros::ServiceClient _model_state_client;
 
     message_filters::Subscriber<lucrezio_spme::ImageBoundingBoxesArray> _image_bounding_boxes_sub;
     message_filters::Subscriber<sensor_msgs::Image> _depth_image_sub;

@@ -85,18 +85,18 @@ namespace lucrezio_spme{
 
     for(int i=0; i < detections.size(); ++i){
 
-      const DetectionPtr& detection = detections[i];
+      const Detection& detection = detections[i];
 
-      if((detection->bottomRight()-detection->topLeft()).norm() < 1e-3 ||
-         (detection->bottomRight()-detection->topLeft()).norm() >= 2e+4)
+      if((detection.bottomRight()-detection.topLeft()).norm() < 1e-3 ||
+         (detection.bottomRight()-detection.topLeft()).norm() >= 2e+4)
         continue;
 
-      std::cerr << std::endl << detection->type() << ": [(";
-      std::cerr << detection->topLeft().transpose() << ") - (" << detection->bottomRight().transpose() << ")]" << std::endl;
+      std::cerr << std::endl << detection.type() << ": [(";
+      std::cerr << detection.topLeft().transpose() << ") - (" << detection.bottomRight().transpose() << ")]" << std::endl;
 
-      std::string object_type = detection->type().substr(0,detection->type().find_first_of("_"));
+      std::string object_type = detection.type().substr(0,detection.type().find_first_of("_"));
 
-      Vector3fVector points = unproject(detection->pixels(),depth_image_);
+      Vector3fVector points = unproject(detection.pixels(),depth_image_);
       Eigen::Vector3f lower,upper;
       getLowerUpper3d(points,lower,upper);
       std::cerr << "BB: [(" << lower.transpose() << "," << upper.transpose() << ")]" << std::endl;

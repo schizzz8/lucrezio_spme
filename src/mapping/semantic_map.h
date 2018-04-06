@@ -8,12 +8,6 @@ namespace lucrezio_spme{
   class SemanticMap : public ObjectPtrVector {
   public:
 
-    //constructor
-    SemanticMap() {}
-
-    //destructor
-    virtual ~SemanticMap();
-
     //this function inserts an object into the map
     inline void addObject(ObjectPtr object_){push_back(object_);}
 

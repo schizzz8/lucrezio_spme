@@ -8,6 +8,7 @@ namespace lucrezio_spme{
   void LogicalDetector::transformBoundingBoxes(DetectionVector &detections){
 
     for(int i=0; i<_models.size(); ++i){
+
       const Model &model = _models[i];
       const Eigen::Isometry3f& model_pose=model._pose;
 
@@ -31,7 +32,7 @@ namespace lucrezio_spme{
           z_max = points[i].z();
       }
       _bounding_boxes[i] = std::make_pair(Eigen::Vector3f(x_min,y_min,z_min),Eigen::Vector3f(x_max,y_max,z_max));
-      detections[i]->type() = model._type;
+      detections[i].type() = model._type;
     }
   }
 
@@ -49,18 +50,18 @@ namespace lucrezio_spme{
         for(int j=0; j < _bounding_boxes.size(); ++j){
 
           if(inRange(point,_bounding_boxes[j])){
-            if(r < detections[j]->topLeft().x())
-              detections[j]->topLeft().x() = r;
-            if(r > detections[j]->bottomRight().x())
-              detections[j]->bottomRight().x() = r;
+            if(r < detections[j].topLeft().x())
+              detections[j].topLeft().x() = r;
+            if(r > detections[j].bottomRight().x())
+              detections[j].bottomRight().x() = r;
 
-            if(c < detections[j]->topLeft().y())
-              detections[j]->topLeft().y() = c;
-            if(c > detections[j]->bottomRight().y())
-              detections[j]->bottomRight().y() = c;
+            if(c < detections[j].topLeft().y())
+              detections[j].topLeft().y() = c;
+            if(c > detections[j].bottomRight().y())
+              detections[j].bottomRight().y() = c;
 
-            detections[j]->pixels()[detections[j]->size()] = Eigen::Vector2i(c,r);
-            ++(detections[j]->size());
+            detections[j].pixels()[detections[j].size()] = Eigen::Vector2i(c,r);
+            ++(detections[j].size());
             break;
           }
         }
@@ -70,7 +71,7 @@ namespace lucrezio_spme{
     }
 
     for(size_t i=0; i < detections.size(); ++i){
-      detections[i]->pixels().resize(detections[i]->size());
+      detections[i].pixels().resize(detections[i].size());
     }
   }
 
@@ -85,17 +86,15 @@ namespace lucrezio_spme{
     directions_image.create(rows,cols);
     initializePinholeDirections(directions_image,_K);
     _points_image.create(rows,cols);
-    cv::Mat depth_image;
-    convert_16UC1_to_32FC1(depth_image, raw_depth_image_);
     computePointsImage(_points_image,
                        directions_image,
-                       depth_image,
+                       raw_depth_image_,
                        0.02f,
                        8.0f);
 
     //initialize detection vector
     int num_models = _models.size();
-    DetectionVector detections(num_models,DetectionPtr (new Detection));
+    DetectionVector detections(num_models);
 
     //Compute world bounding boxes
     double cv_wbb_time = (double)cv::getTickCount();
@@ -141,12 +140,12 @@ namespace lucrezio_spme{
 
   void LogicalDetector::computeLabelImage(const DetectionVector &detections){
     for(int i=0; i < detections.size(); ++i){
-      std::string type = detections[i]->type();
+      std::string type = detections[i].type();
       std::string cropped_type = type.substr(0,type.find_first_of("_"));
       cv::Vec3b color = type2color(cropped_type);
-      for(int j=0; j < detections[i]->pixels().size(); ++j){
-        int r = detections[i]->pixels()[j].x();
-        int c = detections[i]->pixels()[j].y();
+      for(int j=0; j < detections[i].pixels().size(); ++j){
+        int r = detections[i].pixels()[j].x();
+        int c = detections[i].pixels()[j].y();
 
         _label_image.at<cv::Vec3b>(c,r) = color;
       }

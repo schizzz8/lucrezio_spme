@@ -27,9 +27,6 @@ namespace lucrezio_spme{
       _max.z() = o->max().z();
 
     _pose.translation() = (_min+_max)/2.0f;
-
   }
-
-
 }
 

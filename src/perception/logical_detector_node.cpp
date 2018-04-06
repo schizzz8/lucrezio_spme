@@ -55,12 +55,8 @@ namespace lucrezio_spme{
   void LogicalDetectorNode::filterCallback(const lucrezio_simulation_environments::LogicalImage::ConstPtr &logical_image_msg,
                                            const sensor_msgs::Image::ConstPtr &depth_image_msg,
                                            const sensor_msgs::Image::ConstPtr &rgb_image_msg){
-    if(_got_info && !logical_image_msg->models.empty()){
 
-      ROS_INFO("--------------------------");
-      ROS_INFO("Executing filter callback!");
-      ROS_INFO("--------------------------");
-      std::cerr << std::endl;
+    if(_got_info && !logical_image_msg->models.empty()){
 
       //request robot pose
       gazebo_msgs::GetModelState model_state;
@@ -99,13 +95,9 @@ namespace lucrezio_spme{
         ROS_ERROR("cv_bridge exception: %s", e.what());
         return;
       }
-      cv::Mat rgb_image = rgb_cv_ptr->image.clone();
-      cv::Mat depth_image = depth_cv_ptr->image.clone();
-      cv::Mat raw_depth_image;
-      convert_32FC1_to_16UC1(raw_depth_image,depth_image);
 
       //perform object detection
-      DetectionVector detections = compute(rgb_image,raw_depth_image);
+      DetectionVector detections = compute(rgb_cv_ptr->image.clone(),depth_cv_ptr->image.clone());
 
       //Save timestamp (for publishers)
       _last_timestamp = logical_image_msg->header.stamp;
@@ -136,12 +128,12 @@ namespace lucrezio_spme{
     return iso;
   }
 
-  ModelVector LogicalDetectorNode::logicalImageToModels(const lucrezio_simulation_environments::LogicalImage::ConstPtr & logical_image_msg){
+  ModelVector LogicalDetectorNode::logicalImageToModels(const lucrezio_simulation_environments::LogicalImage::ConstPtr &logical_image_msg){
     int num_models = logical_image_msg->models.size();
     ModelVector models(num_models);
-    Model temp_model;
     tf::StampedTransform model_pose;
     for(int i=0; i<num_models; ++i){
+      Model temp_model;
       temp_model._type=logical_image_msg->models[i].type;
       temp_model._min=Eigen::Vector3f(logical_image_msg->models[i].min.x,
                                       logical_image_msg->models[i].min.y,
@@ -162,17 +154,17 @@ namespace lucrezio_spme{
     lucrezio_spme::ImageBoundingBoxesArray image_bounding_boxes;
     image_bounding_boxes.header.frame_id = "camera_depth_optical_frame";
     image_bounding_boxes.header.stamp = _last_timestamp;
-    lucrezio_spme::ImageBoundingBox image_bounding_box;
     for(int i=0; i < detections.size(); ++i){
-      image_bounding_box.type = detections[i]->type();
-      image_bounding_box.top_left.r = detections[i]->topLeft().x();
-      image_bounding_box.top_left.c = detections[i]->topLeft().y();
-      image_bounding_box.bottom_right.r = detections[i]->bottomRight().x();
-      image_bounding_box.bottom_right.c = detections[i]->bottomRight().y();
+      lucrezio_spme::ImageBoundingBox image_bounding_box;
+      image_bounding_box.type = detections[i].type();
+      image_bounding_box.top_left.r = detections[i].topLeft().x();
+      image_bounding_box.top_left.c = detections[i].topLeft().y();
+      image_bounding_box.bottom_right.r = detections[i].bottomRight().x();
+      image_bounding_box.bottom_right.c = detections[i].bottomRight().y();
       lucrezio_spme::Pixel pixel;
-      for(int j=0; j < detections[i]->pixels().size(); ++j){
-        pixel.r = detections[i]->pixels()[j].x();
-        pixel.c = detections[i]->pixels()[j].y();
+      for(int j=0; j < detections[i].pixels().size(); ++j){
+        pixel.r = detections[i].pixels()[j].x();
+        pixel.c = detections[i].pixels()[j].y();
         image_bounding_box.pixels.push_back(pixel);
       }
       image_bounding_boxes.image_bounding_boxes.push_back(image_bounding_box);
