@@ -172,7 +172,7 @@ namespace lucrezio_spme{
         }
       }
 
-      if(local_best->type() == "")
+      if(!local_best)
         continue;
 
       std::cerr << " - Local ID: " << local_best->type() << std::endl;

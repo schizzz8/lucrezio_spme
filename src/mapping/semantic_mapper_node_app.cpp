@@ -10,12 +10,13 @@ int main(int argc, char **argv){
 
   SemanticMapperNode mapper(nh);
 
-  //  ros::spin();
-  ros::Rate rate(4);
-  while(ros::ok()){
-    ros::spinOnce();
-    rate.sleep();
-  }
+  ros::spin();
+
+//  ros::Rate rate(4);
+//  while(ros::ok()){
+//    ros::spinOnce();
+//    rate.sleep();
+//  }
 
   return 0;
 }
