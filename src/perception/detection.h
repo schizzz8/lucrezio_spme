@@ -22,11 +22,13 @@ namespace lucrezio_spme {
     Detection(const std::string& type_="",
               const Eigen::Vector2i& top_left_ = Eigen::Vector2i(10000,10000),
               const Eigen::Vector2i& bottom_right_ = Eigen::Vector2i(-10000,-10000),
-              const std::vector<Eigen::Vector2i>& pixels_ = std::vector<Eigen::Vector2i>(640*480)):
+              const std::vector<Eigen::Vector2i>& pixels_ = std::vector<Eigen::Vector2i>(640*480),
+              const Eigen::Vector3i &color_ = Eigen::Vector3i::Zero()):
       _type(type_),
       _top_left(top_left_),
       _bottom_right(bottom_right_),
       _pixels(pixels_),
+      _color(color_),
       _size(0){}
 
     //setters and getters
@@ -40,6 +42,8 @@ namespace lucrezio_spme {
     inline std::vector<Eigen::Vector2i>& pixels() {return _pixels;}
     inline const int size() const {return _size;}
     inline int &size() {return _size;}
+    inline const Eigen::Vector3i &color() const {return _color;}
+    inline Eigen::Vector3i &color() {return _color;}
 
   private:
     //semantic class of the detected object
@@ -56,6 +60,9 @@ namespace lucrezio_spme {
 
     //size of pixels array
     int _size;
+
+    //class color (only for visualization)
+    Eigen::Vector3i _color;
   };
 
 }

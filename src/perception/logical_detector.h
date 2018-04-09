@@ -59,7 +59,7 @@ namespace lucrezio_spme{
     void computeImageBoundingBoxes(DetectionVector &detections);
 
     //functions to draw label_image
-    cv::Vec3b type2color(std::string type);
+    Eigen::Vector3i type2color(std::string type);
     void computeLabelImage(const DetectionVector &detections);
 
   };

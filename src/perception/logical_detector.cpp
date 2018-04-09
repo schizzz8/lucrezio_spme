@@ -32,7 +32,11 @@ namespace lucrezio_spme{
           z_max = points[i].z();
       }
       _bounding_boxes[i] = std::make_pair(Eigen::Vector3f(x_min,y_min,z_min),Eigen::Vector3f(x_max,y_max,z_max));
-      detections[i].type() = model._type;
+      std::string type = model._type;
+      std::string detection_type = type.substr(0,type.find_first_of("_"));
+      detections[i].type() = detection_type;
+      const Eigen::Vector3i color = type2color(detection_type);
+      detections[i].color() = color;
     }
   }
 
@@ -114,7 +118,7 @@ namespace lucrezio_spme{
     return detections;
   }
 
-  cv::Vec3b LogicalDetector::type2color(std::string type){
+  Eigen::Vector3i LogicalDetector::type2color(std::string type){
     int c;
 
     if(type == "sink")
@@ -150,15 +154,13 @@ namespace lucrezio_spme{
     unsigned long g_value = std::strtoul(result.substr(2,2).c_str(), 0, 16);
     unsigned long b_value = std::strtoul(result.substr(4,2).c_str(), 0, 16);
 
-    cv::Vec3b color(r_value,g_value,b_value);
-    return color;
+    return Eigen::Vector3i(r_value,g_value,b_value);
   }
 
   void LogicalDetector::computeLabelImage(const DetectionVector &detections){
+
     for(int i=0; i < detections.size(); ++i){
-      std::string type = detections[i].type();
-      std::string cropped_type = type.substr(0,type.find_first_of("_"));
-      cv::Vec3b color = type2color(cropped_type);
+      cv::Vec3b color(detections[i].color().x(),detections[i].color().y(),detections[i].color().z());
       for(int j=0; j < detections[i].pixels().size(); ++j){
         int r = detections[i].pixels()[j].x();
         int c = detections[i].pixels()[j].y();

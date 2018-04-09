@@ -82,7 +82,6 @@ namespace lucrezio_spme{
 
       //extract objects
       DetectionVector detections = imageBoundingBoxes2Detections(image_bounding_boxes_msg);
-
       extractObjects(detections,depth_cv_ptr->image.clone());
 
       //data association
@@ -92,7 +91,7 @@ namespace lucrezio_spme{
       mergeMaps();
 
       //publish global map (to be visualized with RViz)
-      if(_global_map->size() && _markers_pub.getNumSubscribers() > 0){
+      if(_global_map->size() && _markers_pub.getNumSubscribers()){
         visualization_msgs::MarkerArray markers;
 
         for(int i=0; i < _global_map->size(); ++i){
@@ -103,7 +102,6 @@ namespace lucrezio_spme{
         }
         _markers_pub.publish(markers);
       }
-//      _image_bounding_boxes_sub.unsubscribe();
     }
   }
 
@@ -128,14 +126,15 @@ namespace lucrezio_spme{
     std::vector<Eigen::Vector2i> pixels;
     for(int i=0; i < image_bounding_boxes.size(); ++i){
       const ImageBoundingBox& image_bounding_box = image_bounding_boxes[i];
-      std::string type = image_bounding_box.type;
-      Eigen::Vector2i top_left (image_bounding_box.top_left.r,image_bounding_box.top_left.c);
-      Eigen::Vector2i bottom_right(image_bounding_box.bottom_right.r,image_bounding_box.bottom_right.c);
+      const std::string type = image_bounding_box.type;
+      const Eigen::Vector3i color (image_bounding_box.color.x,image_bounding_box.color.y,image_bounding_box.color.z);
+      const Eigen::Vector2i top_left (image_bounding_box.top_left.r,image_bounding_box.top_left.c);
+      const Eigen::Vector2i bottom_right(image_bounding_box.bottom_right.r,image_bounding_box.bottom_right.c);
       pixels.clear();
       for(int j=0; j < image_bounding_box.pixels.size(); ++j){
         pixels.push_back(Eigen::Vector2i(image_bounding_box.pixels[j].r,image_bounding_box.pixels[j].c));
       }
-      detections.push_back(Detection(type,top_left,bottom_right,pixels));
+      detections.push_back(Detection(type,top_left,bottom_right,pixels,color));
     }
     return detections;
   }
@@ -163,9 +162,9 @@ namespace lucrezio_spme{
     marker.scale.y = half_size.y();
     marker.scale.z = half_size.z();
 
-    marker.color.r = 0.0f;
-    marker.color.g = 1.0f;
-    marker.color.b = 0.0f;
+    marker.color.b = object->color().x();
+    marker.color.g = object->color().y();
+    marker.color.r = object->color().z();
     marker.color.a = 1.0;
 
     marker.lifetime = ros::Duration();

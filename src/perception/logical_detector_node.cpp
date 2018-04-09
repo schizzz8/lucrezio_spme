@@ -157,6 +157,9 @@ namespace lucrezio_spme{
     for(int i=0; i < detections.size(); ++i){
       lucrezio_spme::ImageBoundingBox image_bounding_box;
       image_bounding_box.type = detections[i].type();
+      image_bounding_box.color.x = detections[i].color().x();
+      image_bounding_box.color.y = detections[i].color().y();
+      image_bounding_box.color.z = detections[i].color().z();
       image_bounding_box.top_left.r = detections[i].topLeft().x();
       image_bounding_box.top_left.c = detections[i].topLeft().y();
       image_bounding_box.bottom_right.r = detections[i].bottomRight().x();

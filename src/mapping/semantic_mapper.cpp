@@ -18,8 +18,9 @@ namespace lucrezio_spme{
 
   ObjectPtr SemanticMapper::objectFromDetection(const Detection &detection){
 
-    std::string object_type = detection.type().substr(0,detection.type().find_first_of("_"));
-    std::cerr << std::endl << object_type << ": ";
+    std::string type = detection.type().substr(0,detection.type().find_first_of("_"));
+    std::cerr << std::endl << type << ": ";
+    Eigen::Vector3f color = detection.color().cast<float>()/255.0f;
 
     std::cerr << "[(" << detection.topLeft().transpose() << ") -";
     std::cerr << " (" << detection.bottomRight().transpose() << ")]" << std::endl;
@@ -73,7 +74,7 @@ namespace lucrezio_spme{
     Eigen::Isometry3f pose = Eigen::Isometry3f::Identity();
     pose.translation() = (max+min)/2.0f;
 
-    return ObjectPtr(new Object(-1,object_type,pose,min,max,cloud));
+    return ObjectPtr(new Object(-1,type,pose,min,max,color,cloud));
 
   }
 

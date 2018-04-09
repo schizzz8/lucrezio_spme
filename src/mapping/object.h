@@ -28,12 +28,14 @@ namespace lucrezio_spme{
            const Eigen::Isometry3f &pose_=Eigen::Isometry3f::Identity(),
            const Eigen::Vector3f &min_=Eigen::Vector3f::Zero(),
            const Eigen::Vector3f &max_=Eigen::Vector3f::Zero(),
+           const Eigen::Vector3f &color_=Eigen::Vector3f::Zero(),
            const srrg_core::Cloud3D &cloud_=srrg_core::Cloud3D()):
       _id(id_),
       _type(type_),
       _pose(pose_),
       _min(min_),
       _max(max_),
+      _color(color_),
       _cloud(cloud_){}
 
     //setters and getters
@@ -47,6 +49,9 @@ namespace lucrezio_spme{
     inline Eigen::Vector3f& min() {return _min;}
     inline const Eigen::Vector3f& max() const {return _max;}
     inline Eigen::Vector3f& max() {return _max;}
+    inline const Eigen::Vector3f &color() const {return _color;}
+    inline Eigen::Vector3f &color() {return _color;}
+
 
     //overloaded operators
     bool operator < (const Object &o);
@@ -72,8 +77,10 @@ namespace lucrezio_spme{
     //upper vertex of the object bounding box
     Eigen::Vector3f _max;
 
+    //object color (for visualization only)
+    Eigen::Vector3f _color;
+
     //object point cloud
     srrg_core::Cloud3D _cloud;
-
   };
 }
