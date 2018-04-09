@@ -130,9 +130,10 @@ namespace lucrezio_spme{
       const Eigen::Vector3i color (image_bounding_box.color.x,image_bounding_box.color.y,image_bounding_box.color.z);
       const Eigen::Vector2i top_left (image_bounding_box.top_left.r,image_bounding_box.top_left.c);
       const Eigen::Vector2i bottom_right(image_bounding_box.bottom_right.r,image_bounding_box.bottom_right.c);
-      pixels.clear();
-      for(int j=0; j < image_bounding_box.pixels.size(); ++j){
-        pixels.push_back(Eigen::Vector2i(image_bounding_box.pixels[j].r,image_bounding_box.pixels[j].c));
+      int num_pixels=image_bounding_box.pixels.size();
+      pixels.resize(num_pixels);
+      for(int j=0; j < num_pixels; ++j){
+        pixels[j]=Eigen::Vector2i(image_bounding_box.pixels[j].r,image_bounding_box.pixels[j].c);
       }
       detections.push_back(Detection(type,top_left,bottom_right,pixels,color));
     }
