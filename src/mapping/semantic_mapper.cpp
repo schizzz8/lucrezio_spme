@@ -172,10 +172,12 @@ namespace lucrezio_spme{
         }
       }
 
-      if(!local_best)
+      if(!local_best){
+        std::cerr << " - Local: none" << std::endl;
         continue;
+      }
 
-      std::cerr << " - Local ID: " << local_best->type() << std::endl;
+      std::cerr << " - Local: " << local_best->type() << std::endl;
       _associations[local_best] = i;
     }
   }

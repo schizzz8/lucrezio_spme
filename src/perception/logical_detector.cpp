@@ -117,17 +117,33 @@ namespace lucrezio_spme{
   cv::Vec3b LogicalDetector::type2color(std::string type){
     int c;
 
-    if(type == "table")
+    if(type == "sink")
       c = 1;
-    if(type == "tomato")
+    if(type == "burner")
       c = 2;
-    if(type == "salt")
+    if(type == "table")
       c = 3;
-    if(type == "milk")
+    if(type == "chair")
       c = 4;
+    if(type == "couch")
+      c = 5;
+    if(type == "bed")
+      c = 6;
+    if(type == "cabinet")
+      c = 7;
+    if(type == "bathroom")
+      c = 8;
+    if(type == "milk")
+      c = 9;
+    if(type == "salt")
+      c = 10;
+    if(type == "tomato")
+      c = 11;
+    if(type == "zwieback")
+      c = 12;
 
     std::stringstream stream;
-    stream << std::setw(6) << std::setfill('0') << std::hex << ((float)c/4.0f)*16777215;
+    stream << std::setw(6) << std::setfill('0') << std::hex << ((float)c/12.0f)*16777215;
     std::string result(stream.str());
 
     unsigned long r_value = std::strtoul(result.substr(0,2).c_str(), 0, 16);
