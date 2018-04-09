@@ -63,7 +63,7 @@ namespace lucrezio_spme{
       model_state.request.model_name = "robot";
       tf::StampedTransform robot_pose;
       if(_model_state_client.call(model_state)){
-        ROS_INFO("Received robot model state!");
+        ROS_INFO("Received robot model state!\n");
         tf::poseMsgToTF(model_state.response.pose,robot_pose);
       }else
         ROS_ERROR("Failed to call service gazebo/get_model_state");

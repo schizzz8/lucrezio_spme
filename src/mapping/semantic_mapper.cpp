@@ -19,11 +19,9 @@ namespace lucrezio_spme{
   ObjectPtr SemanticMapper::objectFromDetection(const Detection &detection){
 
     std::string type = detection.type().substr(0,detection.type().find_first_of("_"));
-    std::cerr << std::endl << type << ": ";
+    std::cerr << type << ": " << std::endl;
     Eigen::Vector3f color = detection.color().cast<float>()/255.0f;
-
-    std::cerr << "[(" << detection.topLeft().transpose() << ") -";
-    std::cerr << " (" << detection.bottomRight().transpose() << ")]" << std::endl;
+    std::cerr << "IBB: [(" << detection.topLeft().transpose() << "," << detection.bottomRight().transpose() << ")]" << std::endl;
 
     const std::vector<Eigen::Vector2i> &pixels = detection.pixels();
     int num_pixels = pixels.size();
@@ -69,7 +67,7 @@ namespace lucrezio_spme{
 
     cloud.resize(k);
 
-    std::cerr << "BB: [(" << min.transpose() << "," << max.transpose() << ")]" << std::endl;
+    std::cerr << "WBB: [(" << min.transpose() << "," << max.transpose() << ")]" << std::endl;
 
     Eigen::Isometry3f pose = Eigen::Isometry3f::Identity();
     pose.translation() = (max+min)/2.0f;
@@ -112,6 +110,8 @@ namespace lucrezio_spme{
                          3,
                          8.0f);
 
+    std::cerr << std::endl << "[Objects Extraction] " << std::endl;
+
     for(int i=0; i < detections.size(); ++i){
 
       const Detection& detection = detections[i];
@@ -141,7 +141,7 @@ namespace lucrezio_spme{
     const int local_size = _local_map->size();
     const int global_size = _global_map->size();
 
-    std::cerr << "[Data Association] ";
+    std::cerr << std::endl << "[Data Association] " << std::endl;
     std::cerr << "{Local Map size: " << local_size << "} ";
     std::cerr << "- {Global Map size: " << global_size << "}" << std::endl;
 
@@ -151,7 +151,7 @@ namespace lucrezio_spme{
       const ObjectPtr &global = (*_global_map)[i];
       const std::string &global_type = global->type();
 
-      std::cerr << "\t>> Global: " << global_type;
+      std::cerr << "\t>> Global: " << global_type << "(" << global->pose().translation().transpose() << ")";
 
       ObjectPtr local_best = nullptr;
       float best_error = std::numeric_limits<float>::max();
@@ -178,7 +178,7 @@ namespace lucrezio_spme{
         continue;
       }
 
-      std::cerr << " - Local: " << local_best->type() << std::endl;
+      std::cerr << " - Local: " << local_best->type() << "(" << local_best->pose().translation().transpose() << ")" << std::endl;
       _associations[local_best] = i;
     }
   }
@@ -188,6 +188,8 @@ namespace lucrezio_spme{
       return;
 
     int added = 0, merged = 0;
+    std::cerr << std::endl << "[Merging] " << std::endl;
+
     for(int i=0; i<_local_map->size(); ++i){
       const ObjectPtr &local = (*_local_map)[i];
       ObjectPtrIdMap::iterator it = _associations.find(local);
@@ -207,6 +209,9 @@ namespace lucrezio_spme{
         added++;
       }
     }
+
+    std::cerr << "merged: " << merged << std::endl;
+    std::cerr << "added: " << added << std::endl;
   }
 
 }
