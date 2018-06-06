@@ -20,8 +20,6 @@ namespace lucrezio_spme{
 
     _synchronizer.registerCallback(boost::bind(&LogicalDetectorNode::filterCallback, this, _1, _2, _3));
 
-    _model_state_client = _nh.serviceClient<gazebo_msgs::GetModelState>("gazebo/get_model_state");
-
     _image_bounding_boxes_pub = _nh.advertise<lucrezio_spme::ImageBoundingBoxesArray>("/image_bounding_boxes", 1);
     _label_image_pub = _it.advertise("/camera/rgb/label_image", 1);
 
@@ -57,30 +55,6 @@ namespace lucrezio_spme{
                                            const sensor_msgs::Image::ConstPtr &rgb_image_msg){
 
     if(_got_info && !logical_image_msg->models.empty()){
-
-      //request robot pose
-      gazebo_msgs::GetModelState model_state;
-      model_state.request.model_name = "robot";
-      tf::StampedTransform robot_pose;
-      if(_model_state_client.call(model_state)){
-        ROS_INFO("Received robot model state!\n");
-        tf::poseMsgToTF(model_state.response.pose,robot_pose);
-      }else
-        ROS_ERROR("Failed to call service gazebo/get_model_state");
-
-      //get rgbd camera transform
-      Eigen::Isometry3f rgbd_pose = Eigen::Isometry3f::Identity();
-      rgbd_pose.translation() = Eigen::Vector3f(0.0,0.0,0.5);
-      rgbd_pose.linear() = Eigen::Quaternionf(0.5,-0.5,0.5,-0.5).toRotationMatrix();
-      const Eigen::Isometry3f rgbd_transform=tfTransform2eigen(robot_pose)*rgbd_pose;
-
-      //get logical camera transform
-      tf::StampedTransform logical_pose;
-      tf::poseMsgToTF(logical_image_msg->pose,logical_pose);
-      const Eigen::Isometry3f logical_transform=tfTransform2eigen(logical_pose);
-
-      //set transform
-      setTransform(rgbd_transform.inverse()*logical_transform);
 
       //set models
       ModelVector models = logicalImageToModels(logical_image_msg);
@@ -133,18 +107,16 @@ namespace lucrezio_spme{
     ModelVector models(num_models);
     tf::StampedTransform model_pose;
     for(int i=0; i<num_models; ++i){
-      Model temp_model;
-      temp_model._type=logical_image_msg->models[i].type;
-      temp_model._min=Eigen::Vector3f(logical_image_msg->models[i].min.x,
-                                      logical_image_msg->models[i].min.y,
-                                      logical_image_msg->models[i].min.z);
-      temp_model._max=Eigen::Vector3f(logical_image_msg->models[i].max.x,
-                                      logical_image_msg->models[i].max.y,
-                                      logical_image_msg->models[i].max.z);
+      models[i].type() = logical_image_msg->models[i].type;
+      models[i].min() = Eigen::Vector3f(logical_image_msg->models[i].min.x,
+                                        logical_image_msg->models[i].min.y,
+                                        logical_image_msg->models[i].min.z);
+      models[i].max() = Eigen::Vector3f(logical_image_msg->models[i].max.x,
+                                        logical_image_msg->models[i].max.y,
+                                        logical_image_msg->models[i].max.z);
       tf::poseMsgToTF(logical_image_msg->models[i].pose,model_pose);
-      temp_model._pose=tfTransform2eigen(model_pose);
+      models[i].pose() = tfTransform2eigen(model_pose);
 
-      models[i] = temp_model;
     }
 
     return models;

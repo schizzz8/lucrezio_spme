@@ -8,7 +8,6 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
-#include <gazebo_msgs/GetModelState.h>
 #include <lucrezio_spme/ImageBoundingBoxesArray.h>
 #include <image_transport/image_transport.h>
 
@@ -50,9 +49,6 @@ namespace lucrezio_spme{
     sensor_msgs::Image,
     sensor_msgs::Image> FilterSyncPolicy;
     message_filters::Synchronizer<FilterSyncPolicy> _synchronizer;
-
-    //client for the model_state service
-    ros::ServiceClient _model_state_client;
 
     //publisher for the detections
     ros::Time _last_timestamp;

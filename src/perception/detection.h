@@ -19,17 +19,34 @@ namespace lucrezio_spme {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     //constructor
-    Detection(const std::string& type_="",
-              const Eigen::Vector2i& top_left_ = Eigen::Vector2i(10000,10000),
-              const Eigen::Vector2i& bottom_right_ = Eigen::Vector2i(-10000,-10000),
-              const std::vector<Eigen::Vector2i>& pixels_ = std::vector<Eigen::Vector2i>(640*480),
-              const Eigen::Vector3i &color_ = Eigen::Vector3i::Zero()):
+//    Detection(const std::string& type_="",
+//              const Eigen::Vector2i& top_left_ = Eigen::Vector2i(10000,10000),
+//              const Eigen::Vector2i& bottom_right_ = Eigen::Vector2i(-10000,-10000),
+//              const std::vector<Eigen::Vector2i>& pixels_ = std::vector<Eigen::Vector2i>(640*480),
+//              const Eigen::Vector3i &color_ = Eigen::Vector3i::Zero()):
+//      _type(type_),
+//      _top_left(top_left_),
+//      _bottom_right(bottom_right_),
+//      _pixels(pixels_),
+//      _color(color_),
+//      _size(0){}
+
+    Detection(){
+      _size=0;
+    }
+
+    Detection(const std::string& type_,
+              const Eigen::Vector2i& top_left_,
+              const Eigen::Vector2i& bottom_right_,
+              const std::vector<Eigen::Vector2i>& pixels_,
+              const Eigen::Vector3i &color_):
       _type(type_),
       _top_left(top_left_),
       _bottom_right(bottom_right_),
       _pixels(pixels_),
       _color(color_),
       _size(0){}
+
 
     //setters and getters
     inline const std::string &type() const {return _type;}

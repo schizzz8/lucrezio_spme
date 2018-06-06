@@ -4,17 +4,24 @@ namespace lucrezio_spme{
 
   using namespace srrg_core;
 
+  LogicalDetector::LogicalDetector():BaseDetector(){
+    _fixed_transform.setIdentity();
+    _fixed_transform.linear() = Eigen::Quaternionf(0.5,-0.5,0.5,-0.5).toRotationMatrix();
+    _fixed_transform = _fixed_transform.inverse();
+  }
 
-  void LogicalDetector::transformBoundingBoxes(DetectionVector &detections){
+  void LogicalDetector::setupDetections(){
 
+    //initialize detection vector
+    int num_models = _models.size();
+    _detections.resize(num_models);
+
+    std::vector<Eigen::Vector3f> points(2);
     for(int i=0; i<_models.size(); ++i){
 
-      const Model &model = _models[i];
-      const Eigen::Isometry3f& model_pose=model._pose;
-
-      std::vector<Eigen::Vector3f> points;
-      points.push_back(_transform*model_pose*Eigen::Vector3f(model._min.x(),model._min.y(),model._min.z()));
-      points.push_back(_transform*model_pose*Eigen::Vector3f(model._max.x(),model._max.y(),model._max.z()));
+      //compute model bounding box in camera frame
+      points[0] = _fixed_transform*_models[i].pose()*_models[i].min();
+      points[1] = _fixed_transform*_models[i].pose()*_models[i].max();
 
       float x_min=100000,x_max=-100000,y_min=100000,y_max=-100000,z_min=100000,z_max=-100000;
       for(int i=0; i < 2; ++i){
@@ -31,16 +38,25 @@ namespace lucrezio_spme{
         if(points[i].z()>z_max)
           z_max = points[i].z();
       }
-      _bounding_boxes[i] = std::make_pair(Eigen::Vector3f(x_min,y_min,z_min),Eigen::Vector3f(x_max,y_max,z_max));
-      std::string type = model._type;
+      _models[i].min() = Eigen::Vector3f(x_min,y_min,z_min);
+      _models[i].max() = Eigen::Vector3f(x_max,y_max,z_max);
+
+      //set detection type and color
+      std::string type = _models[i].type();
       std::string detection_type = type.substr(0,type.find_first_of("_"));
-      detections[i].type() = detection_type;
+      _detections[i].type() = detection_type;
       const Eigen::Vector3i color = type2color(detection_type);
-      detections[i].color() = color;
+      _detections[i].color() = color;
+
+      //init detection
+      _detections[i].topLeft() = Eigen::Vector2i(10000,10000);
+      _detections[i].bottomRight() = Eigen::Vector2i(-10000,-10000);
+
     }
   }
 
-  void LogicalDetector::computeImageBoundingBoxes(DetectionVector &detections){
+  void LogicalDetector::computeImageBoundingBoxes(){
+
     for(int r=0; r<_points_image.rows; ++r){
       const cv::Vec3f* point_ptr=_points_image.ptr<const cv::Vec3f>(r);
       for(int c=0; c<_points_image.cols; ++c, ++point_ptr){
@@ -51,31 +67,26 @@ namespace lucrezio_spme{
 
         const Eigen::Vector3f point(p[0],p[1],p[2]);
 
-        for(int j=0; j < _bounding_boxes.size(); ++j){
+        for(int j=0; j < _models.size(); ++j){
 
-          if(inRange(point,_bounding_boxes[j])){
-            if(r < detections[j].topLeft().x())
-              detections[j].topLeft().x() = r;
-            if(r > detections[j].bottomRight().x())
-              detections[j].bottomRight().x() = r;
+          if(inRange(point,_models[j].min(),_models[j].max())){
 
-            if(c < detections[j].topLeft().y())
-              detections[j].topLeft().y() = c;
-            if(c > detections[j].bottomRight().y())
-              detections[j].bottomRight().y() = c;
+            if(r < _detections[j].topLeft().x())
+              _detections[j].topLeft().x() = r;
+            if(r > _detections[j].bottomRight().x())
+              _detections[j].bottomRight().x() = r;
 
-            detections[j].pixels()[detections[j].size()] = Eigen::Vector2i(r,c);
-            ++(detections[j].size());
+            if(c < _detections[j].topLeft().y())
+              _detections[j].topLeft().y() = c;
+            if(c > _detections[j].bottomRight().y())
+              _detections[j].bottomRight().y() = c;
+
+            _detections[j].pixels().push_back(Eigen::Vector2i(r,c));
+
             break;
           }
         }
-
-
       }
-    }
-
-    for(size_t i=0; i < detections.size(); ++i){
-      detections[i].pixels().resize(detections[i].size());
     }
   }
 
@@ -84,6 +95,8 @@ namespace lucrezio_spme{
 
     int rows=rgb_image_.rows;
     int cols=rgb_image_.cols;
+
+    _detections.clear();
 
     //compute points image
     srrg_core::Float3Image directions_image;
@@ -96,26 +109,18 @@ namespace lucrezio_spme{
                        0.02f,
                        8.0f);
 
-    //initialize detection vector
-    int num_models = _models.size();
-    DetectionVector detections(num_models);
+    double cv_time = (double)cv::getTickCount();
+    setupDetections();
 
-    //Compute world bounding boxes
-    double cv_wbb_time = (double)cv::getTickCount();
-    transformBoundingBoxes(detections);
-    printf("Computing WBB took: %f\n",((double)cv::getTickCount() - cv_wbb_time)/cv::getTickFrequency());
-
-    //Compute image bounding boxes
-    double cv_ibb_time = (double)cv::getTickCount();
-    computeImageBoundingBoxes(detections);
-    printf("Computing IBB took: %f\n",((double)cv::getTickCount() - cv_ibb_time)/cv::getTickFrequency());
+    computeImageBoundingBoxes();
+    printf("Computing BB took: %f\n",((double)cv::getTickCount() - cv_time)/cv::getTickFrequency());
 
     //Compute label image (for visualization only)
     _label_image.create(rows,cols);
     _label_image=cv::Vec3b(0,0,0);
-    computeLabelImage(detections);
+    computeLabelImage();
 
-    return detections;
+    return _detections;
   }
 
   Eigen::Vector3i LogicalDetector::type2color(std::string type){
@@ -157,13 +162,13 @@ namespace lucrezio_spme{
     return Eigen::Vector3i(r_value,g_value,b_value);
   }
 
-  void LogicalDetector::computeLabelImage(const DetectionVector &detections){
+  void LogicalDetector::computeLabelImage(){
 
-    for(int i=0; i < detections.size(); ++i){
-      cv::Vec3b color(detections[i].color().x(),detections[i].color().y(),detections[i].color().z());
-      for(int j=0; j < detections[i].pixels().size(); ++j){
-        int r = detections[i].pixels()[j].x();
-        int c = detections[i].pixels()[j].y();
+    for(int i=0; i < _detections.size(); ++i){
+      cv::Vec3b color(_detections[i].color().x(),_detections[i].color().y(),_detections[i].color().z());
+      for(int j=0; j < _detections[i].pixels().size(); ++j){
+        int r = _detections[i].pixels()[j].x();
+        int c = _detections[i].pixels()[j].y();
 
         _label_image.at<cv::Vec3b>(r,c) = color;
       }
