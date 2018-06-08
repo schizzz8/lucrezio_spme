@@ -51,6 +51,8 @@ namespace lucrezio_spme{
     inline Eigen::Vector3f& max() {return _max;}
     inline const Eigen::Vector3f &color() const {return _color;}
     inline Eigen::Vector3f &color() {return _color;}
+    inline const srrg_core::Cloud3D &cloud() const {return _cloud;}
+    inline srrg_core::Cloud3D &cloud() {return _cloud;}
 
 
     //overloaded operators

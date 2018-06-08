@@ -40,6 +40,9 @@ namespace lucrezio_spme{
     //organized point cloud obtained from the depth image
     srrg_core::Float3Image _points_image;
 
+    //point cloud normals
+    srrg_core::Float3Image _normals_image;
+
     //output image, each pixel stores the label of the corresponding object (for visualization only)
     srrg_core::RGBImage _label_image;
 

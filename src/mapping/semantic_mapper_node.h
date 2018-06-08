@@ -14,7 +14,16 @@
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <gazebo_msgs/GetModelState.h>
+#include <gazebo_msgs/GetLinkState.h>
 #include <visualization_msgs/MarkerArray.h>
+
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_ros/point_cloud.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+
+typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 
 namespace lucrezio_spme{
 
@@ -33,8 +42,8 @@ namespace lucrezio_spme{
     bool _got_info;
     bool _first = true;
 
-    //client for the model_state service
-    ros::ServiceClient _model_state_client;
+    //client for the get_link_state service
+    ros::ServiceClient _link_state_client;
 
     message_filters::Subscriber<lucrezio_spme::ImageBoundingBoxesArray> _image_bounding_boxes_sub;
     message_filters::Subscriber<sensor_msgs::Image> _depth_image_sub;
@@ -43,6 +52,8 @@ namespace lucrezio_spme{
 
     uint32_t _shape;
     ros::Publisher _markers_pub;
+
+    ros::Publisher _cloud_pub;
 
   private:
 

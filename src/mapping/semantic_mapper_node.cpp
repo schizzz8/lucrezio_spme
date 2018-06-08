@@ -19,10 +19,12 @@ namespace lucrezio_spme{
 
     _synchronizer.registerCallback(boost::bind(&SemanticMapperNode::filterCallback, this, _1, _2));
 
-    _model_state_client = _nh.serviceClient<gazebo_msgs::GetModelState>("gazebo/get_model_state");
+    _link_state_client = _nh.serviceClient<gazebo_msgs::GetLinkState>("gazebo/get_link_state");
 
     _shape = visualization_msgs::Marker::CUBE;
     _markers_pub = _nh.advertise<visualization_msgs::MarkerArray>("visualization_markers",1);
+
+    _cloud_pub = _nh.advertise<PointCloud>("visualization_cloud",1);
   }
 
   void SemanticMapperNode::cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr &camera_info_msg){
@@ -54,22 +56,18 @@ namespace lucrezio_spme{
 
     if(_got_info && !image_bounding_boxes_msg->image_bounding_boxes.empty()){
 
-      //request robot pose
-      gazebo_msgs::GetModelState model_state;
-      model_state.request.model_name = "robot";
-      tf::StampedTransform robot_pose;
-      if(_model_state_client.call(model_state)){
-        ROS_INFO("Received robot model state!\n");
-        tf::poseMsgToTF(model_state.response.pose,robot_pose);
+      gazebo_msgs::GetLinkState link_state;
+      link_state.request.link_name = "robot::camera_link";
+      tf::StampedTransform camera_pose;
+      if(_link_state_client.call(link_state)){
+        ROS_INFO("Received camera_link state!\n");
+        tf::poseMsgToTF(link_state.response.link_state.pose,camera_pose);
       }else
-        ROS_ERROR("Failed to call service gazebo/get_model_state");
-      Eigen::Isometry3f rgbd_pose = Eigen::Isometry3f::Identity();
-      rgbd_pose.translation() = Eigen::Vector3f(0.0,0.0,0.5);
-      rgbd_pose.linear() = Eigen::Quaternionf(0.5,-0.5,0.5,-0.5).toRotationMatrix();
+        ROS_ERROR("Failed to call service gazebo/get_link_state");
 
       //set global pose
-      const Eigen::Isometry3f rgbd_transform=tfTransform2eigen(robot_pose)*rgbd_pose;
-      setGlobalT(rgbd_transform);
+      const Eigen::Isometry3f camera_transform=tfTransform2eigen(camera_pose);
+      setGlobalT(camera_transform);
 
       //Extract depth image from ROS message
       cv_bridge::CvImageConstPtr depth_cv_ptr;
@@ -91,16 +89,35 @@ namespace lucrezio_spme{
       mergeMaps();
 
       //publish global map (to be visualized with RViz)
-      if(_global_map->size() && _markers_pub.getNumSubscribers()){
-        visualization_msgs::MarkerArray markers;
+      //      if(_global_map->size() && _markers_pub.getNumSubscribers()){
+      //        visualization_msgs::MarkerArray markers;
+
+      //        for(int i=0; i < _global_map->size(); ++i){
+      //          visualization_msgs::Marker marker;
+      //          const ObjectPtr& object = (*_global_map)[i];
+      //          makeMarkerFromObject(marker,object);
+      //          markers.markers.push_back(marker);
+      //        }
+      //        _markers_pub.publish(markers);
+      //      }
+      if(_global_map->size()){
+        PointCloud::Ptr msg (new PointCloud);
+        msg->header.frame_id = "/map";
+        msg->height = 1;
+        int num_points=0;
 
         for(int i=0; i < _global_map->size(); ++i){
-          visualization_msgs::Marker marker;
-          const ObjectPtr& object = (*_global_map)[i];
-          makeMarkerFromObject(marker,object);
-          markers.markers.push_back(marker);
+          const srrg_core::Cloud3D &object_cloud = _global_map->at(i)->cloud();
+          for(int j=0; j < object_cloud.size(); ++j){
+            msg->points.push_back(pcl::PointXYZ(object_cloud[j].point().x(),
+                                                object_cloud[j].point().y(),
+                                                object_cloud[j].point().z()));
+            num_points++;
+          }
         }
-        _markers_pub.publish(markers);
+        msg->width = num_points;
+        pcl_conversions::toPCL(ros::Time::now(), msg->header.stamp);
+        _cloud_pub.publish (msg);
       }
     }
   }

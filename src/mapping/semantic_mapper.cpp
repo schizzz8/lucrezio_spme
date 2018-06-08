@@ -13,7 +13,10 @@ namespace lucrezio_spme{
     _local_set = false;
     _global_set = false;
 
-    _globalT = Eigen::Isometry3f::Identity();
+    _globalT.setIdentity();
+
+    _fixed_transform.setIdentity();
+    _fixed_transform.linear() = Eigen::Quaternionf(0.5,-0.5,0.5,-0.5).toRotationMatrix();
   }
 
   ObjectPtr SemanticMapper::objectFromDetection(const Detection &detection){
@@ -36,13 +39,13 @@ namespace lucrezio_spme{
       const cv::Vec3f& cv_point = _points_image.at<const cv::Vec3f>(pixels[i].x(), pixels[i].y());
       const cv::Vec3f& cv_normal = _normals_image.at<const cv::Vec3f>(pixels[i].x(), pixels[i].y());
 
-      if(cv::norm(cv_point) < 1e-3 || cv::norm(cv_normal) < 1e-3)
+      if(cv::norm(cv_point) < 1e-3 || cv::norm(cv_normal) < 0.5)
         continue;
 
       Eigen::Vector3f point(cv_point[0], cv_point[1],cv_point[2]);
       Eigen::Vector3f normal(cv_normal[0], cv_normal[1],cv_normal[2]);
 
-      point = _globalT*point;
+      point = _globalT*_fixed_transform*point;
 
       cloud[k] = RichPoint3D(point,normal,1.0f);
       k++;
@@ -67,12 +70,11 @@ namespace lucrezio_spme{
 
     cloud.resize(k);
 
+//    cloud.voxelize(0.05f);
+
     std::cerr << "WBB: [(" << min.transpose() << "," << max.transpose() << ")]" << std::endl;
 
-    Eigen::Isometry3f pose = Eigen::Isometry3f::Identity();
-    pose.translation() = (max+min)/2.0f;
-
-    return ObjectPtr(new Object(-1,type,pose,min,max,color,cloud));
+    return ObjectPtr(new Object(-1,type,Eigen::Isometry3f::Identity(),min,max,color,cloud));
 
   }
 
@@ -116,8 +118,7 @@ namespace lucrezio_spme{
 
       const Detection& detection = detections[i];
 
-      if((detection.bottomRight()-detection.topLeft()).norm() < 1e-3 ||
-         (detection.bottomRight()-detection.topLeft()).norm() >= 2e+4)
+      if(detection.pixels().size() < 10)
         continue;
 
       ObjectPtr obj_ptr = objectFromDetection(detection);

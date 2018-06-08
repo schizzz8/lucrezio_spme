@@ -59,10 +59,12 @@ namespace lucrezio_spme{
 
     for(int r=0; r<_points_image.rows; ++r){
       const cv::Vec3f* point_ptr=_points_image.ptr<const cv::Vec3f>(r);
-      for(int c=0; c<_points_image.cols; ++c, ++point_ptr){
+      const cv::Vec3f* normal_ptr=_normals_image.ptr<const cv::Vec3f>(r);
+      for(int c=0; c<_points_image.cols; ++c, ++point_ptr, ++normal_ptr){
         const cv::Vec3f& p = *point_ptr;
+        const cv::Vec3f& n = *normal_ptr;
 
-        if(cv::norm(p) < 1e-3)
+        if(cv::norm(p) < 1e-3 || cv::norm(n) < 0.5)
           continue;
 
         const Eigen::Vector3f point(p[0],p[1],p[2]);
@@ -108,6 +110,13 @@ namespace lucrezio_spme{
                        raw_depth_image_,
                        0.02f,
                        8.0f);
+
+    //compute point cloud normals
+    computeSimpleNormals(_normals_image,
+                         _points_image,
+                         3,
+                         3,
+                         8.0f);
 
     double cv_time = (double)cv::getTickCount();
     setupDetections();

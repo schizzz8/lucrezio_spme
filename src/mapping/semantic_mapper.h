@@ -45,6 +45,9 @@ namespace lucrezio_spme{
     //pose of the robot w.r.t. the global map
     Eigen::Isometry3f _globalT;
 
+    Eigen::Isometry3f _fixed_transform;
+
+
     //flags
     bool _local_set;
     bool _global_set;

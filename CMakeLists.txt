@@ -22,6 +22,8 @@ find_package(catkin REQUIRED
   rospy
   sensor_msgs
   std_msgs
+  pcl_conversions 
+  pcl_ros
 )
 
 ## System dependencies are found with CMake's conventions
@@ -138,6 +140,8 @@ catkin_package(
     sensor_msgs 
     std_msgs 
     message_runtime
+    pcl_conversions
+    pcl_ros
 #  DEPENDS system_lib
 )
 
